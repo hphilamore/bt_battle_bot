@@ -1,3 +1,8 @@
+/*
+Battle bot controller using bluetooth game pad
+Based on: https://racheldebarros.com/connect-your-game-controller-to-an-esp32/
+*/
+
 #include <Bluepad32.h>
 
 ControllerPtr myControllers[BP32_MAX_GAMEPADS];
