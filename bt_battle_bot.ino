@@ -7,6 +7,32 @@ Based on: https://racheldebarros.com/connect-your-game-controller-to-an-esp32/
 
 ControllerPtr myControllers[BP32_MAX_GAMEPADS];
 
+// // Motor A
+// const int enA = 25;
+// const int in1 = 16;
+// const int in2 = 17;
+
+// // Motor B
+// const int enB = 26;
+// const int in3 = 18;
+// const int in4 = 19;
+
+// Motor A
+const int enA = 25;
+const int in1 = 16;
+const int in2 = 17;
+
+// Motor B
+const int enB = 26;
+const int in3 = 18;
+const int in4 = 19;
+
+// PWM settings
+const int freq = 5000;    // 5 kHz PWM frequency
+const int resolution = 8; // 8-bit resolution (0-255)
+const int channelA = 0;   // PWM channel for ENA
+const int channelB = 1;   // PWM channel for ENB
+
 // This callback gets called any time a new gamepad is connected.
 // Up to 4 gamepads can be connected at the same time.
 void onConnectedController(ControllerPtr ctl) {
@@ -134,45 +160,108 @@ void processGamepad(ControllerPtr ctl) {
     // There are different ways to query whether a button is pressed.
     // By query each button individually:
     //  a(), b(), x(), y(), l1(), etc...
-    if (ctl->a()) {
-        static int colorIdx = 0;
-        // Some gamepads like DS4 and DualSense support changing the color LED.
-        // It is possible to change it by calling:
-        switch (colorIdx % 3) {
-            case 0:
-                // Red
-                ctl->setColorLED(255, 0, 0);
-                break;
-            case 1:
-                // Green
-                ctl->setColorLED(0, 255, 0);
-                break;
-            case 2:
-                // Blue
-                ctl->setColorLED(0, 0, 255);
-                break;
-        }
-        colorIdx++;
+    // if (ctl->a()) {
+    //     static int colorIdx = 0;
+    //     // Some gamepads like DS4 and DualSense support changing the color LED.
+    //     // It is possible to change it by calling:
+    //     switch (colorIdx % 3) {
+    //         case 0:
+    //             // Red
+    //             ctl->setColorLED(255, 0, 0);
+    //             break;
+    //         case 1:
+    //             // Green
+    //             ctl->setColorLED(0, 255, 0);
+    //             break;
+    //         case 2:
+    //             // Blue
+    //             ctl->setColorLED(0, 0, 255);
+    //             break;
+    //     }
+    //     colorIdx++;
+    // }
+
+    // if (ctl->b()) {
+    //     // Turn on the 4 LED. Each bit represents one LED.
+    //     static int led = 0;
+    //     led++;
+    //     // Some gamepads like the DS3, DualSense, Nintendo Wii, Nintendo Switch
+    //     // support changing the "Player LEDs": those 4 LEDs that usually indicate
+    //     // the "gamepad seat".
+    //     // It is possible to change them by calling:
+    //     ctl->setPlayerLEDs(led & 0x0f);
+    // }
+
+    // if (ctl->x()) {
+    //     // Some gamepads like DS3, DS4, DualSense, Switch, Xbox One S, Stadia support rumble.
+    //     // It is possible to set it by calling:
+    //     // Some controllers have two motors: "strong motor", "weak motor".
+    //     // It is possible to control them independently.
+    //     ctl->playDualRumble(0 /* delayedStartMs */, 250 /* durationMs */, 0x80 /* weakMagnitude */,
+    //                         0x40 /* strongMagnitude */);
+    // }
+
+    int speed = 200;
+
+    digitalWrite(in1, LOW);
+    digitalWrite(in2, LOW);
+    digitalWrite(in3, LOW);
+    digitalWrite(in4, LOW);
+
+    // // Serial.println("controlling motors");
+    if (ctl->axisRY() <= -400){
+    Serial.println("Forward");
+    // Forward
+    digitalWrite(in1, HIGH);
+    digitalWrite(in2, LOW);
+    digitalWrite(in3, LOW);
+    digitalWrite(in4, HIGH);
+    ledcWrite(channelA, speed); // Speed 0-255
+    ledcWrite(channelB, speed);
     }
 
-    if (ctl->b()) {
-        // Turn on the 4 LED. Each bit represents one LED.
-        static int led = 0;
-        led++;
-        // Some gamepads like the DS3, DualSense, Nintendo Wii, Nintendo Switch
-        // support changing the "Player LEDs": those 4 LEDs that usually indicate
-        // the "gamepad seat".
-        // It is possible to change them by calling:
-        ctl->setPlayerLEDs(led & 0x0f);
+    else if (ctl->axisRY() >= 400){
+    Serial.println("Backward");
+    // Backward
+    digitalWrite(in1, LOW);
+    digitalWrite(in2, HIGH);
+    digitalWrite(in3, HIGH);
+    digitalWrite(in4, LOW);
+    ledcWrite(channelA, speed); // Speed 0-255
+    ledcWrite(channelB, speed);
     }
 
-    if (ctl->x()) {
-        // Some gamepads like DS3, DS4, DualSense, Switch, Xbox One S, Stadia support rumble.
-        // It is possible to set it by calling:
-        // Some controllers have two motors: "strong motor", "weak motor".
-        // It is possible to control them independently.
-        ctl->playDualRumble(0 /* delayedStartMs */, 250 /* durationMs */, 0x80 /* weakMagnitude */,
-                            0x40 /* strongMagnitude */);
+    else if (ctl->axisRX() >= 400){
+    Serial.println("Left");
+    // Left
+    digitalWrite(in1, HIGH);
+    digitalWrite(in2, LOW);
+    digitalWrite(in3, HIGH);
+    digitalWrite(in4, LOW);
+    ledcWrite(channelA, speed); // Speed 0-255
+    ledcWrite(channelB, speed);
+    }
+
+    else if (ctl->axisRX() <= -400){
+    Serial.println("Right");
+    // Left
+    digitalWrite(in1, LOW);
+    digitalWrite(in2, HIGH);
+    digitalWrite(in3, LOW);
+    digitalWrite(in4, HIGH);
+    ledcWrite(channelA, speed); // Speed 0-255
+    ledcWrite(channelB, speed);
+    }
+
+    else {
+    Serial.println("Stop");
+    // Stop
+    digitalWrite(in1, LOW);
+    digitalWrite(in2, LOW);
+    digitalWrite(in3, LOW);
+    digitalWrite(in4, LOW);
+    ledcWrite(channelA, 0); // Speed 0-255
+    ledcWrite(channelB, 0);
     }
 
     // Another way to query controller data is by getting the buttons() function.
@@ -271,6 +360,18 @@ void setup() {
     // - Second one, which is a "virtual device", is a mouse.
     // By default, it is disabled.
     BP32.enableVirtualDevice(false);
+
+    pinMode(in1, OUTPUT);
+    pinMode(in2, OUTPUT);
+    pinMode(in3, OUTPUT);
+    pinMode(in4, OUTPUT);
+
+    // Setup PWM channels
+    ledcSetup(channelA, freq, resolution);
+    ledcSetup(channelB, freq, resolution);
+
+    ledcAttachPin(enA, channelA);
+    ledcAttachPin(enB, channelB);
 }
 
 // Arduino loop function. Runs in CPU 1.
