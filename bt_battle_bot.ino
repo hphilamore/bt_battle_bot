@@ -4,19 +4,20 @@ Based on: https://racheldebarros.com/connect-your-game-controller-to-an-esp32/
 */
 
 #include <Bluepad32.h>
+#include <ESP32Servo.h>
 
 ControllerPtr myControllers[BP32_MAX_GAMEPADS];
 
-// // Motor A
-// const int enA = 25;
-// const int in1 = 16;
-// const int in2 = 17;
+// --- Servos ---
+Servo servo1;
+Servo servo2;
+Servo servo3;
 
-// // Motor B
-// const int enB = 26;
-// const int in3 = 18;
-// const int in4 = 19;
+const int servo_pin1 = 21;
+const int servo_pin2 = 22;
+const int servo_pin3 = 23;
 
+// --- Motors ---
 // Motor A
 const int enA = 25;
 const int in1 = 16;
@@ -30,8 +31,10 @@ const int in4 = 19;
 // PWM settings
 const int freq = 5000;    // 5 kHz PWM frequency
 const int resolution = 8; // 8-bit resolution (0-255)
-const int channelA = 0;   // PWM channel for ENA
-const int channelB = 1;   // PWM channel for ENB
+const int motor_channel_a = 0;   // PWM channel for ENA
+const int motor_channel_b = 1;   // PWM channel for ENB
+
+
 
 // This callback gets called any time a new gamepad is connected.
 // Up to 4 gamepads can be connected at the same time.
@@ -216,8 +219,8 @@ void processGamepad(ControllerPtr ctl) {
     digitalWrite(in2, LOW);
     digitalWrite(in3, LOW);
     digitalWrite(in4, HIGH);
-    ledcWrite(channelA, speed); // Speed 0-255
-    ledcWrite(channelB, speed);
+    ledcWrite(motor_channel_a, speed); // Speed 0-255
+    ledcWrite(motor_channel_b, speed);
     }
 
     else if (ctl->axisRY() >= 400){
@@ -227,8 +230,8 @@ void processGamepad(ControllerPtr ctl) {
     digitalWrite(in2, HIGH);
     digitalWrite(in3, HIGH);
     digitalWrite(in4, LOW);
-    ledcWrite(channelA, speed); // Speed 0-255
-    ledcWrite(channelB, speed);
+    ledcWrite(motor_channel_a, speed); // Speed 0-255
+    ledcWrite(motor_channel_b, speed);
     }
 
     else if (ctl->axisRX() >= 400){
@@ -238,8 +241,8 @@ void processGamepad(ControllerPtr ctl) {
     digitalWrite(in2, LOW);
     digitalWrite(in3, HIGH);
     digitalWrite(in4, LOW);
-    ledcWrite(channelA, speed); // Speed 0-255
-    ledcWrite(channelB, speed);
+    ledcWrite(motor_channel_a, speed); // Speed 0-255
+    ledcWrite(motor_channel_b, speed);
     }
 
     else if (ctl->axisRX() <= -400){
@@ -249,8 +252,8 @@ void processGamepad(ControllerPtr ctl) {
     digitalWrite(in2, HIGH);
     digitalWrite(in3, LOW);
     digitalWrite(in4, HIGH);
-    ledcWrite(channelA, speed); // Speed 0-255
-    ledcWrite(channelB, speed);
+    ledcWrite(motor_channel_a, speed); // Speed 0-255
+    ledcWrite(motor_channel_b, speed);
     }
 
     else {
@@ -260,9 +263,36 @@ void processGamepad(ControllerPtr ctl) {
     digitalWrite(in2, LOW);
     digitalWrite(in3, LOW);
     digitalWrite(in4, LOW);
-    ledcWrite(channelA, 0); // Speed 0-255
-    ledcWrite(channelB, 0);
+    ledcWrite(motor_channel_a, 0); // Speed 0-255
+    ledcWrite(motor_channel_b, 0);
     }
+
+    // Serial.println("sweep");
+    // int pos = 180;
+    // Serial.println(pos);
+    // servo1.write(pos);    // tell servo to go to position in variable 'pos'
+    // delay(2000); 
+    // pos = 90;
+    // Serial.println(pos);
+    // servo1.write(pos);    // tell servo to go to position in variable 'pos'
+    // delay(2000); 
+    // pos = 0;
+    // Serial.println(pos);
+    // servo1.write(pos);    // tell servo to go to position in variable 'pos'
+    // delay(2000); 
+    
+
+    // for (int pos = 0; pos <= 180; pos += 1) { // goes from 0 degrees to 180 degrees
+	// 	// in steps of 1 degree
+    //     Serial.println(pos);
+	// 	servo1.write(pos);    // tell servo to go to position in variable 'pos'
+	// 	delay(15);             // waits 15ms for the servo to reach the position
+	// }
+	// for (int pos = 180; pos >= 0; pos -= 1) { // goes from 180 degrees to 0 degrees
+	// 	Serial.println(pos);
+    //     servo1.write(pos);    // tell servo to go to position in variable 'pos'
+	// 	delay(15);             // waits 15ms for the servo to reach the position
+	// }
 
     // Another way to query controller data is by getting the buttons() function.
     // See how the different "dump*" functions dump the Controller info.
@@ -361,17 +391,44 @@ void setup() {
     // By default, it is disabled.
     BP32.enableVirtualDevice(false);
 
+    // -------- Servo Setup --------
+    ESP32PWM::allocateTimer(0);
+
+    servo1.setPeriodHertz(50);
+    servo1.attach(servo_pin1, 1000, 2000);
+
+    servo2.setPeriodHertz(50);
+    servo2.attach(servo_pin2, 1000, 2000);
+
+    servo3.setPeriodHertz(50);
+    servo3.attach(servo_pin3, 1000, 2000);
+
+    // -------- Motor PWM Setup --------
     pinMode(in1, OUTPUT);
     pinMode(in2, OUTPUT);
     pinMode(in3, OUTPUT);
     pinMode(in4, OUTPUT);
 
     // Setup PWM channels
-    ledcSetup(channelA, freq, resolution);
-    ledcSetup(channelB, freq, resolution);
+    ledcSetup(motor_channel_a, freq, resolution);
+    ledcSetup(motor_channel_b, freq, resolution);
 
-    ledcAttachPin(enA, channelA);
-    ledcAttachPin(enB, channelB);
+    ledcAttachPin(enA, motor_channel_a);
+    ledcAttachPin(enB, motor_channel_b);
+
+
+
+    // // -------- Motor PWM Setup --------
+    // ledcSetup(motor_channel_a, freq, resolution);
+    // ledcSetup(motor_channel_b, freq, resolution);
+
+    // ledcAttachPin(enA, motor_channel_a);
+    // ledcAttachPin(enB, motor_channel_b);
+
+    // pinMode(in1, OUTPUT);
+    // pinMode(in2, OUTPUT);
+    // pinMode(in3, OUTPUT);
+    // pinMode(in4, OUTPUT);
 }
 
 // Arduino loop function. Runs in CPU 1.
