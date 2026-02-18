@@ -30,8 +30,10 @@ const int in4 = 19;
 // PWM settings
 const int freq = 5000;    // 5 kHz PWM frequency
 const int resolution = 8; // 8-bit resolution (0-255)
-const int channelA = 0;   // PWM channel for ENA
-const int channelB = 1;   // PWM channel for ENB
+// const int channelA = 0;   // PWM channel for ENA
+// const int channelB = 1;   // PWM channel for ENB
+const int channelA = 6;   // PWM channel for ENA
+const int channelB = 7;   // PWM channel for ENB
 
 // This callback gets called any time a new gamepad is connected.
 // Up to 4 gamepads can be connected at the same time.
